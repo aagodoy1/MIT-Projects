@@ -134,33 +134,17 @@ def perceptron(feature_matrix, labels, T):
         the offset parameter `theta_0` as a floating point number
             (found also after T iterations through the feature matrix).
     """
-    print(feature_matrix, 
-          labels, 
-          T)
-    
+    theta = np.zeros(len(feature_matrix[0]))
+    theta0 = 0
     # Your code here
     #raise NotImplementedError
     for t in range(T):
-        print(f't number is {t}')
         for i in get_order(feature_matrix.shape[0]):
-            print(f'i number is {i}')
-            # Your code here
+            # y_i*(theta*x_i + theta0)
+            theta, theta0 = perceptron_single_step_update(feature_matrix[i], labels[i], theta, theta0)
+    return theta, theta0
 
-            raise NotImplementedError
     # Your code here
-
-    for point in points:
-
-        # y_i*theta*x_i  // run the test
-        if point[1]*np.dot(theta,point[0])+theta0 <= 0:
-
-            error_found = True
-            point[2] += 1
-
-            # theta = theta + y_i*x_1  // update the classifier
-            theta = theta + point[1]*point[0]
-            theta0 += point[1]
-            updates.append(theta)
     raise NotImplementedError
 
 
@@ -191,8 +175,23 @@ def average_perceptron(feature_matrix, labels, T):
         the average offset parameter `theta_0` as a floating point number
             (averaged also over T iterations through the feature matrix).
     """
+    theta = np.zeros(len(feature_matrix[0]))
+    theta0 = 0
+    
+    theta_sum = np.zeros(len(feature_matrix[0]))
+    theta0_sum = 0
+
+    steps = T*feature_matrix.shape[0]
     # Your code here
-    raise NotImplementedError
+    #raise NotImplementedError
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            # y_i*(theta*x_i + theta0)
+            theta, theta0 = perceptron_single_step_update(feature_matrix[i], labels[i], theta, theta0)
+            theta_sum = theta_sum + theta
+            theta0_sum = theta0_sum + theta0
+    return theta_sum/steps, theta0_sum/steps
+    # Your code here
 
 
 def pegasos_single_step_update(
