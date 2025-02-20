@@ -221,6 +221,14 @@ def pegasos_single_step_update(
         real valued number with the value of theta_0 after the old updated has
         completed.
     """
+    if label*(np.dot(theta,feature_vector)+theta_0) <= 1:
+        # theta = theta + y_i*x_1  // update the classifier
+        new_theta = (1 - eta * L) * theta + eta * label * feature_vector
+        new_theta0 = theta_0 + eta * label
+    else:
+        new_theta = (1 - eta * L) * theta
+        new_theta0 = theta_0
+    return new_theta, new_theta0
     # Your code here
     raise NotImplementedError
 
@@ -254,6 +262,24 @@ def pegasos(feature_matrix, labels, T, L):
         after T iterations through the feature matrix.
     """
     # Your code here
+    features = feature_matrix.shape[1]
+
+    theta = np.zeros(features)
+    theta0 = 0
+    
+    updates = 0  # Counter for total updates
+
+    for _ in range(T):  # Iterate T times over the dataset
+        for i in get_order(feature_matrix.shape[0]):  # Ensure correct order
+            updates += 1
+            eta = 1 / np.sqrt(updates)  # Compute learning rate
+
+            # Perform Pegasos single-step update
+            theta, theta0 = pegasos_single_step_update(
+                feature_matrix[i], labels[i], L, eta, theta, theta0
+            )
+
+    return theta, theta0
     raise NotImplementedError
 
 
@@ -291,7 +317,9 @@ def classify(feature_matrix, theta, theta_0):
         should be considered a positive classification.
     """
     # Your code here
-    raise NotImplementedError
+    predictions = np.dot(feature_matrix, theta) + theta_0
+
+    return np.where(predictions > 0, 1, -1)
 
 
 def classifier_accuracy(
@@ -328,6 +356,15 @@ def classifier_accuracy(
         accuracy of the trained classifier on the validation data.
     """
     # Your code here
+    theta, theta0 = classifier(train_feature_matrix, train_labels, **kwargs)
+    
+    train_classification = classify(train_feature_matrix, theta, theta0)
+    train_accuracy = accuracy(train_classification, train_labels)
+
+    val_clasification = classify(val_feature_matrix, theta, theta0)
+    val_accuracy = accuracy(val_clasification, val_labels)
+
+    return train_accuracy, val_accuracy
     raise NotImplementedError
 
 
@@ -342,12 +379,19 @@ def extract_words(text):
         count as their own words.
     """
     # Your code here
-    raise NotImplementedError
+    #raise NotImplementedError
 
     for c in punctuation + digits:
         text = text.replace(c, ' ' + c + ' ')
     return text.lower().split()
 
+def load_stopwords(filepath):
+    """Carga las stopwords desde un archivo de texto."""
+    with open(filepath, "r", encoding="utf-8") as f:
+        return set(word.strip() for word in f.readlines())
+
+# Cargar stopwords antes de llamar la función
+stopwords = load_stopwords("stopwords.txt")
 
 
 def bag_of_words(texts, remove_stopword=False):
@@ -362,14 +406,15 @@ def bag_of_words(texts, remove_stopword=False):
         integer `index`.
     """
     # Your code here
-    raise NotImplementedError
-    
+    #raise NotImplementedError
+
     indices_by_word = {}  # maps word to unique index
     for text in texts:
         word_list = extract_words(text)
         for word in word_list:
             if word in indices_by_word: continue
-            if word in stopword: continue
+            if remove_stopword and word in stopwords: continue
+            #if word in stopword: continue # asi estaba antes
             indices_by_word[word] = len(indices_by_word)
 
     return indices_by_word
@@ -388,6 +433,7 @@ def extract_bow_feature_vectors(reviews, indices_by_word, binarize=True):
     """
     # Your code here
     feature_matrix = np.zeros([len(reviews), len(indices_by_word)], dtype=np.float64)
+
     for i, text in enumerate(reviews):
         word_list = extract_words(text)
         for word in word_list:
@@ -395,7 +441,8 @@ def extract_bow_feature_vectors(reviews, indices_by_word, binarize=True):
             feature_matrix[i, indices_by_word[word]] += 1
     if binarize:
         # Your code here
-        raise NotImplementedError
+        feature_matrix[feature_matrix > 0] = 1  # Convierte todos los valores > 0 en 1
+        #raise NotImplementedError
     return feature_matrix
 
 
