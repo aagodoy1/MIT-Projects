@@ -391,10 +391,10 @@ def load_stopwords(filepath):
         return set(word.strip() for word in f.readlines())
 
 # Cargar stopwords antes de llamar la función
-stopwords = load_stopwords("stopwords.txt")
+#stopwords = load_stopwords("stopwords.txt")
 
 
-def bag_of_words(texts, remove_stopword=False):
+def bag_of_words(texts, remove_stopword=False, stopword_file="stopwords.txt"):
     """
     NOTE: feel free to change this code as guided by Section 3 (e.g. remove
     stopwords, add bigrams etc.)
@@ -407,6 +407,8 @@ def bag_of_words(texts, remove_stopword=False):
     """
     # Your code here
     #raise NotImplementedError
+    remove_stopword=True ### Se cambia a TRUE para hacer una prueba. 
+    stopwords = load_stopwords(stopword_file) if remove_stopword else set()
 
     indices_by_word = {}  # maps word to unique index
     for text in texts:
@@ -416,6 +418,11 @@ def bag_of_words(texts, remove_stopword=False):
             if remove_stopword and word in stopwords: continue
             #if word in stopword: continue # asi estaba antes
             indices_by_word[word] = len(indices_by_word)
+
+            # if remove_stopword and word in stopwords: 
+            #     continue  # No agregamos stopwords al diccionario
+            # if word not in indices_by_word:
+            #     indices_by_word[word] = len(indices_by_word)  # Asigna un índice único
 
     return indices_by_word
 
@@ -437,15 +444,17 @@ def extract_bow_feature_vectors(reviews, indices_by_word, binarize=True):
     for i, text in enumerate(reviews):
         word_list = extract_words(text)
         for word in word_list:
-            if word not in indices_by_word: continue
-            feature_matrix[i, indices_by_word[word]] += 1
+            #if word not in indices_by_word: continue # ESTO ES LO CORRECTO 
+            #feature_matrix[i, indices_by_word[word]] += 1
+
+            if word in indices_by_word:  # ESTO ES PARA LA  ULTIMA PREGUNTA
+                feature_matrix[i, indices_by_word[word]] += 1 # ESTO ES PARA LA  ULTIMA PREGUNTA
+    binarize = False # ESTO ES PARA LA  ULTIMA PREGUNTA
     if binarize:
         # Your code here
         feature_matrix[feature_matrix > 0] = 1  # Convierte todos los valores > 0 en 1
         #raise NotImplementedError
     return feature_matrix
-
-
 
 def accuracy(preds, targets):
     """
