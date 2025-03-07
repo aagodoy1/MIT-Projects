@@ -32,6 +32,21 @@ def compute_probabilities(X, theta, temp_parameter):
         H - (k, n) NumPy array, where each entry H[j][i] is the probability that X[i] is labeled as j
     """
     #YOUR CODE HERE
+    scores = np.dot(theta, X.T)/temp_parameter #  SABEMOS que si tenemos 2 matriz de NxM y AxB, entonces para poder hacer producto punto
+    # M tiene que se igual a A si queremos que la matriz resultante tenga dimensiones NxB. Si queremos que tenga dimension por ejemplo,
+    # NxA entonces tenemos que usar la transpuesta de la segunda matriz, y tambien que M sea igual  B.
+
+    # Apply numerical stability trick: subtract max score from each column
+    c = np.max(scores, axis=0) #axis = 0 is for columns
+
+    scores = scores - c
+
+    exponentials = np.exp(scores)
+
+    H_ij = exponentials / np.sum(exponentials, axis = 0)
+
+    return H_ij
+
     raise NotImplementedError
 
 def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
@@ -50,6 +65,9 @@ def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
     Returns
         c - the cost value (scalar)
     """
+    compute_probabilities
+
+
     #YOUR CODE HERE
     raise NotImplementedError
 
