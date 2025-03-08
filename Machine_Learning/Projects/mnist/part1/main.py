@@ -79,7 +79,7 @@ def run_multiclass_svm_on_MNIST():
     return test_error
 
 
-print('Multiclass SVM test_error:', run_multiclass_svm_on_MNIST())
+#print('Multiclass SVM test_error:', run_multiclass_svm_on_MNIST())
 
 #######################################################################
 # 4. Multinomial (Softmax) Regression and Gradient Descent
@@ -115,7 +115,12 @@ def run_softmax_on_MNIST(temp_parameter=1):
     return test_error
 
 
-print('softmax test_error=', run_softmax_on_MNIST(temp_parameter=1))
+#print('softmax test_error=', run_softmax_on_MNIST(temp_parameter=1))
+
+# print('softmax test_error 0.5 variance=', run_softmax_on_MNIST(temp_parameter=0.5))
+# print('softmax test_error 1 variance =', run_softmax_on_MNIST(temp_parameter=1))
+# print('softmax test_error 2 variance =', run_softmax_on_MNIST(temp_parameter=2))
+
 
 # TODO: Find the error rate for temp_parameter = [.5, 1.0, 2.0]
 #      Remember to return the tempParameter to 1, and re-run run_softmax_on_MNIST
@@ -133,8 +138,35 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
     See run_softmax_on_MNIST for more info.
     """
     # YOUR CODE HERE
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    theta, cost_function_history = softmax_regression(train_x, train_y, temp_parameter, alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150)
+    plot_cost_function_over_time(cost_function_history)
+    test_error = compute_test_error_mod3(test_x, test_y, theta, temp_parameter)
+    # Save the model parameters theta obtained from calling softmax_regression to disk.
+    write_pickle_data(theta, "./theta.pkl.gz")
+
+    test_y_mod3 = test_y % 3
+
+    # Obtener predicciones del modelo en base a theta
+    predicted_labels = get_classification(test_x, theta, temp_parameter)
+
+    # Transformar las predicciones a mod 3
+    predicted_labels_mod3 = predicted_labels % 3
+
+    # Calcular el error de clasificación con los labels mod 3
+    test_error_mod3 = np.mean(predicted_labels_mod3 != test_y_mod3)
+
+    # Imprimir el error mod 3
+    print(f"Test error (mod 3): {test_error_mod3}")
+
+    return test_error_mod3
+    # TODO: add your code here for the "Using the Current Model" question in tab 6.
+    #      and print the test_error_mod3
+    return test_error
+
     raise NotImplementedError
 
+print('softmax test_error_mod3 =', run_softmax_on_MNIST_mod3())
 
 # TODO: Run run_softmax_on_MNIST_mod3(), report the error rate
 

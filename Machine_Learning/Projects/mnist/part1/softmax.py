@@ -65,7 +65,18 @@ def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
     Returns
         c - the cost value (scalar)
     """
-    compute_probabilities
+
+    probs = compute_probabilities(X,theta, temp_parameter)
+    
+    n = X.shape[0]
+
+    left_part = -1/n * np.sum(np.log(probs[Y, np.arange(n)]))
+
+    right_part = lambda_factor/2 * np.sum(theta**2)
+
+    return right_part + left_part
+
+    #right = lambda_factor/2 * 
 
 
     #YOUR CODE HERE
@@ -88,6 +99,28 @@ def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_param
     Returns:
         theta - (k, d) NumPy array that is the final value of parameters theta
     """
+
+    probs = compute_probabilities(X,theta, temp_parameter)
+    
+    n = X.shape[0] #Number of instances
+    k = theta.shape[0] # Number of classes
+
+
+    #Crear probs de que y_i == m
+    Y_one_hot = np.zeros((k,n))
+
+    Y_one_hot[Y,np.arange(n)] = 1 # When y_i == m entonce toma el valor de 1, para cuando la clase sea la correcta dado por el vector Y.
+
+    # Create the left and right side of the gradient
+    left_part = -1/(temp_parameter*n) * ((Y_one_hot - probs)@X)
+    right_part = lambda_factor * theta
+
+    gradient = left_part + right_part
+
+    theta -= alpha * gradient
+
+    return theta
+
     #YOUR CODE HERE
     raise NotImplementedError
 
@@ -109,6 +142,7 @@ def update_y(train_y, test_y):
                     for each datapoint in the test set
     """
     #YOUR CODE HERE
+    return train_y%3, test_y%3
     raise NotImplementedError
 
 def compute_test_error_mod3(X, Y, theta, temp_parameter):
@@ -127,6 +161,12 @@ def compute_test_error_mod3(X, Y, theta, temp_parameter):
         test_error - the error rate of the classifier (scalar)
     """
     #YOUR CODE HERE
+    preds = get_classification(X, theta, temp_parameter)
+    mod3_preds = preds%3
+
+    return 1 - np.mean(mod3_preds == Y)
+
+
     raise NotImplementedError
 
 def softmax_regression(X, Y, temp_parameter, alpha, lambda_factor, k, num_iterations):
