@@ -166,7 +166,7 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
 
     raise NotImplementedError
 
-print('softmax test_error_mod3 =', run_softmax_on_MNIST_mod3())
+#print('softmax test_error_mod3 =', run_softmax_on_MNIST_mod3())
 
 # TODO: Run run_softmax_on_MNIST_mod3(), report the error rate
 
@@ -179,8 +179,86 @@ print('softmax test_error_mod3 =', run_softmax_on_MNIST_mod3())
 
 # TODO: First fill out the PCA functions in features.py as the below code depends on them.
 
+def run_softmax_on_PCA_MNIST(n_components=18, temp_parameter=1):
+    """
+    Trains softmax regression using the PCA-transformed MNIST dataset.
 
-n_components = 18
+    Args:
+        n_components - Number of principal components to use for training
+        temp_parameter - Temperature parameter for softmax regression
+
+    Returns:
+        test_error_pca - Test error after training softmax regression on PCA features
+    """
+    # Obtener los datos originales
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    
+    # Centrar los datos
+    train_x_centered, feature_means = center_data(train_x)
+    
+    # Obtener componentes principales
+    pcs = principal_components(train_x_centered)
+
+    # Proyectar en las primeras `n_components` componentes
+    train_pca = project_onto_PC(train_x, pcs, n_components, feature_means)
+    test_pca = project_onto_PC(test_x, pcs, n_components, feature_means)
+
+    # Entrenar softmax regression en los datos reducidos
+    theta, cost_function_history = softmax_regression(
+        train_pca, train_y, temp_parameter, alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150
+    )
+    
+    # Evaluar el error en los datos de prueba proyectados
+    test_error_pca = compute_test_error(test_pca, test_y, theta, temp_parameter)
+
+    # Imprimir el error de prueba
+    print(f"Test error for {n_components}-dimensional PCA features: {test_error_pca}")
+
+    return test_error_pca
+
+#test_error_pca = run_softmax_on_PCA_MNIST(n_components=10, temp_parameter=1)
+
+# Now we start other part
+
+
+def run_softmax_on_MNIST_cubic_PCA(temp_parameter=1):
+    """
+    Trains softmax regression on cubic feature mapping applied to the PCA-reduced dataset.
+
+    Returns:
+        Test error using 10-dimensional cubic PCA features.
+    """
+    # Cargar los datos de MNIST
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+
+    # Aplicar PCA de 18 dimensiones (ya implementado)
+    train_x_centered, feature_means = center_data(train_x)
+    pcs = principal_components(train_x_centered)
+    train_pca = project_onto_PC(train_x, pcs, 10, feature_means)
+    test_pca = project_onto_PC(test_x, pcs, 10, feature_means)
+
+    # Aplicar transformación cúbica a los datos PCA
+    train_cubic = cubic_features(train_pca)
+    test_cubic = cubic_features(test_pca)
+
+    # Entrenar el modelo de regresión softmax en los datos transformados
+    theta, cost_function_history = softmax_regression(train_cubic, train_y, temp_parameter, 
+                                                      alpha=0.3, lambda_factor=1.0e-4, k=10, num_iterations=150)
+    
+    # Graficar la función de costo a lo largo del tiempo
+    plot_cost_function_over_time(cost_function_history)
+
+    # Calcular el error en los datos de prueba
+    test_error = compute_test_error(test_cubic, test_y, theta, temp_parameter)
+
+    # Imprimir el error final
+    print(f"Test error for 10-dimensional cubic PCA features: {test_error}")
+
+    return test_error
+
+#test_error_pca10 = run_softmax_on_MNIST_cubic_PCA()
+
+n_components = 10
 
 ###Correction note:  the following 4 lines have been modified since release.
 train_x_centered, feature_means = center_data(train_x)
@@ -194,30 +272,69 @@ test_pca = project_onto_PC(test_x, pcs, n_components, feature_means)
 
 # TODO: Train your softmax regression model using (train_pca, train_y)
 #       and evaluate its accuracy on (test_pca, test_y).
+# from sklearn.svm import SVC
+# from sklearn.metrics import accuracy_score
+
+# # Crear y entrenar el modelo SVM con kernel polinómico de grado 3
+# svm_poly = SVC(kernel='poly', degree=3, random_state=0)
+# svm_poly.fit(train_pca, train_y)  # Entrenar el modelo
+
+# # Hacer predicciones sobre los datos de prueba
+# predictions = svm_poly.predict(test_pca)
+
+# # Calcular la tasa de error
+# error_rate = 1 - accuracy_score(test_y, predictions)
+
+# # Imprimir el resultado
+# print(f"SKLEARN Error rate for 10-dimensional PCA features using cubic polynomial SVM: {error_rate:.6f}")
+
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+# Train an RBF kernel SVM
+svm_rbf = SVC(kernel='rbf', random_state=0)  # Default parameters
+svm_rbf.fit(train_pca, train_y)  # Train on PCA-transformed features
+
+# Predict on the test set 
+predicted_labels = svm_rbf.predict(test_pca)
+
+# Compute error rate
+test_error_rbf = 1 - accuracy_score(test_y, predicted_labels)
+
+# Print the test error
+print(f"RBF SVM Error rate for 10-dimensional PCA features using rbf svm = {test_error_rbf:.4f}")
 
 
 # TODO: Use the plot_PC function in features.py to produce scatterplot
 #       of the first 100 MNIST images, as represented in the space spanned by the
 #       first 2 principal components found above.
-plot_PC(train_x[range(000, 100), ], pcs, train_y[range(000, 100)], feature_means)#feature_means added since release
+#plot_PC(train_x[range(000, 100), ], pcs, train_y[range(000, 100)], feature_means)#feature_means added since release
+
 
 
 # TODO: Use the reconstruct_PC function in features.py to show
 #       the first and second MNIST images as reconstructed solely from
 #       their 18-dimensional principal component representation.
 #       Compare the reconstructed images with the originals.
-firstimage_reconstructed = reconstruct_PC(train_pca[0, ], pcs, n_components, train_x, feature_means)#feature_means added since release
-plot_images(firstimage_reconstructed)
-plot_images(train_x[0, ])
+#firstimage_reconstructed = reconstruct_PC(train_pca[0, ], pcs, n_components, train_x, feature_means)#feature_means added since release
+#plot_images(firstimage_reconstructed)
+#plot_images(train_x[0, ])
 
-secondimage_reconstructed = reconstruct_PC(train_pca[1, ], pcs, n_components, train_x, feature_means)#feature_means added since release
-plot_images(secondimage_reconstructed)
-plot_images(train_x[1, ])
+#secondimage_reconstructed = reconstruct_PC(train_pca[1, ], pcs, n_components, train_x, feature_means)#feature_means added since release
+#plot_images(secondimage_reconstructed)
+#plot_images(train_x[1, ])
 
 
 ## Cubic Kernel ##
 # TODO: Find the 10-dimensional PCA representation of the training and test set
 
+n_components = 10
+
+###Correction note:  the following 4 lines have been modified since release.
+train_x_centered, feature_means = center_data(train_x)
+pcs = principal_components(train_x_centered)
+train_pca10 = project_onto_PC(train_x, pcs, n_components, feature_means)
+test_pca10 = project_onto_PC(test_x, pcs, n_components, feature_means)
 
 # TODO: First fill out cubicFeatures() function in features.py as the below code requires it.
 

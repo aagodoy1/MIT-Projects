@@ -19,6 +19,7 @@ def polynomial_kernel(X, Y, c, p):
         Returns:
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
+    return (np.dot(X, Y.T) + c)**p
     # YOUR CODE HERE
     raise NotImplementedError
 
@@ -38,5 +39,15 @@ def rbf_kernel(X, Y, gamma):
         Returns:
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
+    #FORMULA
+    # norm(x-y)^2 = norm(x^2) + norm(y^2) - 2*(x*y)
+
+    X_sq = np.sum(X**2, axis=1, keepdims=True)  # (n, 1)
+    Y_sq = np.sum(Y**2, axis=1, keepdims=True)  # (m, 1)
+    
+    dist_sq = X_sq - 2 * np.dot(X, Y.T) + Y_sq.T  # (n, m)
+    
+    # Aplicar la función exponencial con el parámetro gamma
+    return np.exp(-gamma * dist_sq)
     # YOUR CODE HERE
     raise NotImplementedError
