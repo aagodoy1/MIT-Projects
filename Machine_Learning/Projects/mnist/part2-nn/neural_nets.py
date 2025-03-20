@@ -11,14 +11,19 @@ import math
         One hidden layer with three neurons whose activation function is ReLU.
         One output neuron whose activation function is the identity function.
 """
+#h = np.matrix('1. 1. 1.')
+#h = np.matrix('1. 1.; 1. 1.; 1. 1.')
+#print(f'{h.shape}')
 
 
 def rectified_linear_unit(x):
     """ Returns the ReLU of x, or the maximum between 0 and x."""
+    return max(x,0)
     # TODO
 
 def rectified_linear_unit_derivative(x):
     """ Returns the derivative of ReLU."""
+    return 1 if x > 0 else 0
     # TODO
 
 def output_layer_activation(x):
@@ -41,8 +46,8 @@ class NeuralNetwork():
     def __init__(self):
 
         # DO NOT CHANGE PARAMETERS (Initialized to floats instead of ints)
-        self.input_to_hidden_weights = np.matrix('1. 1.; 1. 1.; 1. 1.')
-        self.hidden_to_output_weights = np.matrix('1. 1. 1.')
+        self.input_to_hidden_weights = np.matrix('1. 1.; 1. 1.; 1. 1.') #(3x2)
+        self.hidden_to_output_weights = np.matrix('1. 1. 1.') # (1,3)
         self.biases = np.matrix('0.; 0.; 0.')
         self.learning_rate = .001
         self.epochs_to_train = 10
@@ -55,20 +60,47 @@ class NeuralNetwork():
         input_values = np.matrix([[x1],[x2]]) # 2 by 1
 
         # Calculate the input and activation of the hidden layer
-        hidden_layer_weighted_input = # TODO (3 by 1 matrix)
-        hidden_layer_activation = # TODO (3 by 1 matrix)
+        #Input is input * weights + bias
+        #(3x2) @ (2x1) + (3x1) = (3x1)
+        hidden_layer_weighted_input = self.input_to_hidden_weights @ input_values + self.biases # TODO (3 by 1 matrix)
+        hidden_layer_activation = rectified_linear_unit(hidden_layer_weighted_input)# TODO (3 by 1 matrix)
 
-        output =  # TODO
-        activated_output = # TODO
+        #(1x3) @ (3x1)= (1x1)
+        output =  np.dot(self.hidden_to_output_weights, hidden_layer_activation) # TODO #(Se multiplica un 1x3 por un 3x1)
+        activated_output = output_layer_activation(output) # TODO
 
         ### Backpropagation ###
 
         # Compute gradients
-        output_layer_error = # TODO
-        hidden_layer_error = # TODO (3 by 1 matrix)
+        #Se usa la derivada de funcion de costo C = 1/2*(y-a)^2
+        output_layer_error = activated_output - y # TODO
+        hidden_layer_error = np.multiply(self.hidden_to_output_weights.T * output_layer_error, 
+                                         rectified_linear_unit_derivative(hidden_layer_weighted_input)) # TODO (3 by 1 matrix)
 
-        bias_gradients = # TODO
-        hidden_to_output_weight_gradients = # TODO
+# La fórmula general en backpropagation es:
+
+# δ^l =(W^(l+1))^T * δ^(l+1)⊙f'(z^l)
+
+# δ^l  es el error en la capa oculta (lo que queremos calcular).
+# W^(l+1) es la matriz de pesos de la capa oculta a la salida (hidden_to_output_weights).
+# 𝛿𝑙+1 es el error de la capa de salida (output_layer_error).
+# f'(z^l) es la derivada de la función de activación en la capa oculta (usamos ReLU), evaluada en los valores que entraron a la capa oculta.
+# 𝑧^l  es la entrada antes de aplicar la activación.
+
+# Donde z^l se calcula como: 
+# z^l=W^l * a^(l−1) + b^l
+
+# W^l → pesos de la capa actual.
+# a^(l−1) → activaciones de la capa anterior.
+# 𝑏^l  → bias de la capa actual.
+# Donde en este caso a^(l) = f(z^l)
+
+        #El error o sesgo de la capa oculta, es el mismo que el de la neurona (3x1)
+        # dC/db^l = δ^l
+        bias_gradients = hidden_layer_error @  # TODO
+        
+        #dC/dW^l = δ^l * a^(l-1)
+        hidden_to_output_weight_gradients = bias_gradients *  # TODO
         input_to_hidden_weight_gradients = # TODO
 
         # Use gradients to adjust weights and biases using gradient descent
@@ -105,6 +137,7 @@ class NeuralNetwork():
             else:
                 print("Point ", point[0], point[1], " failed to be predicted correctly.")
                 return
+
 
 x = NeuralNetwork()
 
