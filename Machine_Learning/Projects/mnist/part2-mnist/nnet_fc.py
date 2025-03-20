@@ -8,14 +8,15 @@ import torch.autograd as autograd
 import torch.nn.functional as F
 import torch.nn as nn
 import sys
-sys.path.append("..")
+#sys.path.append("..")
+sys.path.append(r"C:\Users\user\Documents\GitHub\MIT-Projects\Machine_Learning\Projects\mnist")
 import utils
 from utils import *
 from train_utils import batchify_data, run_epoch, train_model
 
 def main():
     # Load the dataset
-    num_classes = 10
+    #num_classes = 10
     X_train, y_train, X_test, y_test = get_MNIST_data()
 
     # Split into train and dev
@@ -39,9 +40,10 @@ def main():
     #################################
     ## Model specification TODO
     model = nn.Sequential(
-              nn.Linear(784, 10),
+              nn.Linear(784, 128),
               nn.ReLU(),
-              nn.Linear(10, 10),
+              #nn.LeakyReLU(),
+              nn.Linear(128, 10),
             )
     lr=0.1
     momentum=0
@@ -60,3 +62,19 @@ if __name__ == '__main__':
     np.random.seed(12321)  # for reproducibility
     torch.manual_seed(12321)  # for reproducibility
     main()
+
+# 10 hidden units
+# Atribute:        Validation Accuracy       Test Accuracy
+# Baseline:             0.932487           0.9204727564102564
+# Batchsize64:          0.940020           0.9314903846153846
+# LR 0.01:              0.934659           0.9206730769230769
+# Moment 0.9:           0.907754           0.8963341346153846
+# Leaky Activ:          0.931985           0.9207732371794872
+
+# 128 hidden units
+# Atribute:        Validation Accuracy 
+# Baseline:          0.977941              
+# Batchsize64:       0.976142              
+# LR 0.01:           0.955047              
+# Moment 0.9:        0.964405              
+# Leaky Activ:       0.978443              

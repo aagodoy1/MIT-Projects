@@ -42,10 +42,32 @@ def main():
 
     #################################
     ## Model specification TODO
-    model = nn.Sequential(
-              nn.Conv2d(1, 32, (3, 3)),
-              nn.ReLU(),
-              nn.MaxPool2d((2, 2)),
+    model = nn.Sequential(  
+              # Cada capa de 3x3 reduce en 2 las dimensiones, ya que tenemos que padding = 0 y stride = 1 (default). 
+              # K: Tamaño kernel(filtro)
+              # S: Stride(default = 1) cuantos pixeles se mueve hacia el lado cada filtro
+              # P: Padding(default = 0) pixeles extra que se agrega para no perder informacion de la imagen. (relleno)
+              # Por lo tanto,
+              # El calculo es: 
+                    # OUT = (IN - K + 2P)/S + 1 
+              # En ese caso seria (28-3+2*0)/1 + 1 = 26, por lo que cada filtro 3x3 reduce en 2 el tamaño
+
+              #Entra imagen de 1x28x28
+              nn.Conv2d(1, 32, (3, 3)), # Capa convulucional 2d: 1 entrada, 32 feature maps, los filtros tienen tamaño de 3x3 
+              # Se convierte en imagen de 32 x 26 x 26
+              nn.ReLU(), # Relu
+              nn.MaxPool2d((2, 2)), #Max pool de 2x2
+              # Se convierte en filtro de 32 x 13 x 13
+              nn.Conv2d(32, 64, (3, 3)), # Capa convulucional 2d: 1 entrada, 64 feature maps, los filtros tienen tamaño de 3x3
+              # sE convierte en 64 x 11 x 11
+              nn.ReLU(), # Relu
+              nn.MaxPool2d((2, 2)), #Max pool de 2x2, siempre redondea hacia abajo
+              # Se convierte en 64 x 5 x 5
+              Flatten(), #Se agrega una flatten layer
+              # Deja un vector de 64*5*5
+              nn.Linear(64*5*5, 128), 
+              nn.Dropout(0.5),
+              nn.Linear(128,10)
             )
     ##################################
 
