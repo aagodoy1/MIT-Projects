@@ -89,6 +89,69 @@ def plot(X: np.ndarray, mixture: GaussianMixture, post: np.ndarray,
     plt.show()
 
 
+def plot_multi(X, mixtures_dict, posts_dict, titles_dict):
+    """Dibuja múltiples clusters en una figura con subplots sin tocar `plot()`."""
+    K_vals = list(mixtures_dict.keys())
+    num_plots = len(K_vals)
+
+    n_rows = 2
+    n_cols = 2
+
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, 10))
+    axes = axes.flatten()
+
+    color = ["r", "b", "k", "y", "m", "c"]
+    r = 0.25
+
+    for idx, K in enumerate(K_vals):
+        ax = axes[idx]
+        mixture = mixtures_dict[K]
+        post = posts_dict[K]
+        title = titles_dict[K]
+
+        _, K_comp = post.shape
+        percent = post / post.sum(axis=1).reshape(-1, 1)
+
+        ax.set_title(title)
+        # Calcular límites del gráfico automáticamente
+        x_min, x_max = X[:, 0].min(), X[:, 0].max()
+        y_min, y_max = X[:, 1].min(), X[:, 1].max()
+        x_margin = (x_max - x_min) * 0.1
+        y_margin = (y_max - y_min) * 0.1
+
+        ax.set_xlim(x_min - x_margin, x_max + x_margin)
+        ax.set_ylim(y_min - y_margin, y_max + y_margin)
+        ax.set_aspect('equal')
+
+        for i, point in enumerate(X):
+            theta = 0
+            for j in range(K_comp):
+                offset = percent[i, j] * 360
+                arc = Arc(point,
+                          r,
+                          r,
+                          angle=0,
+                          theta1=theta,
+                          theta2=theta + offset,
+                          edgecolor=color[j])
+                ax.add_patch(arc)
+                theta += offset
+
+        for j in range(K_comp):
+            mu = mixture.mu[j]
+            sigma = np.sqrt(mixture.var[j])
+            circle = Circle(mu, sigma, color=color[j], fill=False)
+            ax.add_patch(circle)
+            legend = "mu = ({:.2f}, {:.2f})\nstdv = {:.2f}".format(mu[0], mu[1], sigma)
+            ax.text(mu[0], mu[1], legend)
+
+    # Elimina ejes sobrantes si hay menos de 4
+    for idx in range(num_plots, len(axes)):
+        fig.delaxes(axes[idx])
+
+    plt.tight_layout()
+    plt.show()
+    
 def rmse(X, Y):
     return np.sqrt(np.mean((X - Y)**2))
 
