@@ -51,6 +51,7 @@ for K in Ks:
 
 # PREGUNTA 2
 
+
 Ks = [1,2,3,4]
 seeds = [0,1,2,3,4]
 
@@ -84,13 +85,12 @@ for K in Ks:
     best_mixtures[K] = best_mix
 
     # Graficar la mejor solución para este K
-    #common.plot(X, best_mix, post, f"K={K}")
+    common.plot(X, best_mix, post, f"K={K}")
 
 # Imprimir resultados
 for K in Ks:
     print(f"Cost|K={K} = {best_log_likehood[K]}")
 '''
-
 # Ks = [1, 2, 3, 4]
 # seeds = [0, 1, 2, 3, 4]
 
@@ -127,7 +127,7 @@ for K in Ks:
 # # Imprimir resultados
 # for K in Ks:
 #     print(f"Log-likelihood | K={K} = {best_log_likelihood[K]}")
-
+'''
 Ks = [1, 2, 3, 4]
 seeds = [0, 1, 2, 3, 4]
 
@@ -164,6 +164,28 @@ common.plot_multi(X, best_mixtures, best_posts, titles_dict)
 # Imprimir resultados
 for K in Ks:
     print(f"Cost | K={K} = {best_cost[K]}")
+'''
+### PREGUNTA 4 ENCONTRAR EL MEJOR K  y BCI
 
+Ks = [1,2,3,4]
+highest_bic= float('-inf')
 
+for K in Ks:
+    print(f'Starting K = {K}')
+
+    # Inicializar mezcla para K-means
+    mixture, post = common.init(X, K, 0)
+    #print(f'mixture = {mixture} and post = {post.ndim}')
+
+    # Ejecutar K-means
+    mixture, post, log_likehood = naive_em.run(X, mixture, post)
+
+    bic_value = common.bic(X, mixture, log_likehood)
+    # Verificar si es el mejor costo encontrado hasta ahora para este K
+    if bic_value > highest_bic:
+        highest_bic = bic_value
+        best_k = K
+
+print(f'Best K = {best_k}')
+print(f'Best bic = {highest_bic}')
 

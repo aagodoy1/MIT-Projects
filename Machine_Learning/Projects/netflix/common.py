@@ -168,4 +168,19 @@ def bic(X: np.ndarray, mixture: GaussianMixture,
     Returns:
         float: the BIC for this mixture
     """
+    ## Ecuacion principal: 
+    ## BCI = l - 1/2 * p * ln(n)
+    ## Where 
+    #   l: log verosimilitud del modelo
+    #   p: N° parametros libres
+    #   n: Cantidad de datos.
+
+    # Part a) Calculate l
+    n, d = X.shape
+    K, _ = mixture.mu.shape
+    
+    #
+    bic_value = log_likelihood - 0.5 * (K * d + 2 * K - 1) * np.log(n)
+
+    return bic_value
     raise NotImplementedError
