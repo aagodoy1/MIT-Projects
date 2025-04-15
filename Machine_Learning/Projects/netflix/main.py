@@ -164,7 +164,6 @@ common.plot_multi(X, best_mixtures, best_posts, titles_dict)
 # Imprimir resultados
 for K in Ks:
     print(f"Cost | K={K} = {best_cost[K]}")
-'''
 ### PREGUNTA 4 ENCONTRAR EL MEJOR K  y BCI
 
 Ks = [1,2,3,4]
@@ -188,4 +187,4 @@ for K in Ks:
 
 print(f'Best K = {best_k}')
 print(f'Best bic = {highest_bic}')
-
+'''

@@ -18,6 +18,25 @@ def estep(X: np.ndarray, mixture: GaussianMixture) -> Tuple[np.ndarray, float]:
         float: log-likelihood of the assignment
 
     """
+    n, d = X.shape
+    K, _ = mixture.mu.shape
+    post = np.zeros((n, K))
+
+    #0) Calcular las medias
+
+    # 1) calcular log-posteriori
+    for customer in range(n):
+        #X_nan = np.where(X[customer] == 0, np.nan, X[customer])
+        indexes = np.where(X[customer] != 0)[0]
+        for cluster in range(K):
+            x_cust_pel = X[customer, indexes]
+            
+            
+
+
+    for k in range(K):
+        pass
+    return 1, 2
     raise NotImplementedError
 
 
