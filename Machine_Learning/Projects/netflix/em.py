@@ -20,23 +20,40 @@ def estep(X: np.ndarray, mixture: GaussianMixture) -> Tuple[np.ndarray, float]:
     """
     n, d = X.shape
     K, _ = mixture.mu.shape
-    post = np.zeros((n, K))
+    post_cust_cluster = np.zeros((n, K))
+    epsilon = 10**-16
+    log_likelihood = 0
 
     #0) Calcular las medias
 
-    # 1) calcular log-posteriori
+    # mu: np.ndarray  # (K, d) array - each row corresponds to a gaussian component mean
+    # var: np.ndarray  # (K, ) array - each row corresponds to the variance of a component
+    # p: np.ndarray  # (K, ) array = each row corresponds to the weight of a component
+
+    # 1) calcular log-posteriori (primero necesitamos p de cluster dado user)
     for customer in range(n):
+        func_cust_cluster = np.zeros(K)
+
         #X_nan = np.where(X[customer] == 0, np.nan, X[customer])
         indexes = np.where(X[customer] != 0)[0]
         for cluster in range(K):
             x_cust_pel = X[customer, indexes]
-            
-            
+            mean_clust_pel = mixture.mu[cluster, indexes]
+            sigma2_cluster = mixture.var[cluster]
+            p_cust_cluster = mixture.p[cluster]
 
+    # 1.2) calcular log-posteriori (# Log de la densidad gaussiana multivariada isotrópica:)
+            log_N = -np.abs(indexes)* 0.5 * np.log(2*np.pi*sigma2_cluster) - (1/(2*sigma2_cluster)) * np.sum((x_cust_pel-mean_clust_pel)**2)
+            func_cust_cluster[cluster] = np.log(p_cust_cluster + epsilon) + log_N
+        
+        logsum = logsumexp(func_cust_cluster)
 
-    for k in range(K):
-        pass
-    return 1, 2
+        for cluster in range(K):
+            log_post_cust_cluster = func_cust_cluster[cluster] - logsum
+            post_cust_cluster[customer, cluster] = np.exp(log_post_cust_cluster)
+        log_likelihood += logsum
+
+    return post_cust_cluster, log_likelihood
     raise NotImplementedError
 
 
