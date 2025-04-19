@@ -43,7 +43,7 @@ def estep(X: np.ndarray, mixture: GaussianMixture) -> Tuple[np.ndarray, float]:
             p_cust_cluster = mixture.p[cluster]
 
     # 1.2) calcular log-posteriori (# Log de la densidad gaussiana multivariada isotrópica:)
-            log_N = -np.abs(indexes)* 0.5 * np.log(2*np.pi*sigma2_cluster) - (1/(2*sigma2_cluster)) * np.sum((x_cust_pel-mean_clust_pel)**2)
+            log_N = -len(indexes) * 0.5 * np.log(2*np.pi*sigma2_cluster) - (1/(2*sigma2_cluster)) * np.sum((x_cust_pel-mean_clust_pel)**2)
             func_cust_cluster[cluster] = np.log(p_cust_cluster + epsilon) + log_N
         
         logsum = logsumexp(func_cust_cluster)
@@ -73,6 +73,20 @@ def mstep(X: np.ndarray, post: np.ndarray, mixture: GaussianMixture,
     Returns:
         GaussianMixture: the new gaussian mixture
     """
+
+    n, d = X.shape
+    K, _ = mixture.mu.shape
+    post_cust_cluster = np.zeros((n, K))
+    epsilon = 10**-16
+    log_likelihood = 0
+
+    # mu: np.ndarray  # (K, d) array - each row corresponds to a gaussian component mean
+    # var: np.ndarray  # (K, ) array - each row corresponds to the variance of a component
+    # p: np.ndarray  # (K, ) array = each row corresponds to the weight of a component
+
+    for cluster in range(K):
+        
+
     raise NotImplementedError
 
 
