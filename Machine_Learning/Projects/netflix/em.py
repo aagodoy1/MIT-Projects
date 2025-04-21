@@ -76,18 +76,69 @@ def mstep(X: np.ndarray, post: np.ndarray, mixture: GaussianMixture,
 
     n, d = X.shape
     K, _ = mixture.mu.shape
-    post_cust_cluster = np.zeros((n, K))
-    epsilon = 10**-16
-    log_likelihood = 0
 
+    mu = np.zeros((K, d))
+    var = np.zeros(K)
+    p = np.zeros(K)
+
+    N_cluster = 0 
     # mu: np.ndarray  # (K, d) array - each row corresponds to a gaussian component mean
     # var: np.ndarray  # (K, ) array - each row corresponds to the variance of a component
     # p: np.ndarray  # (K, ) array = each row corresponds to the weight of a component
 
-    for cluster in range(K):
-        
+    # for cluster in range(K):
+    #     N_cluster = 0
+    #     N_cluster += np.sum(post, axis = 0)
 
-    raise NotImplementedError
+    N_K = np.sum(post, axis = 0) # Peso total del cluster
+    p = N_K/n # Peso del cluster asociado a cada n
+
+    for cluster in range(K):
+
+        for pelicula in range(d):
+
+            numerador = 0
+            denominador = 0
+
+            for customer in range(n):
+
+                if X[customer, pelicula] != 0:
+                #if full_points[customer] and X[customer, pelicula] != 0:
+                    numerador += post[customer, cluster] * X[customer, pelicula]
+                    denominador += post[customer, cluster]
+            
+            #if denominador > 0:
+            if denominador >= 1-1e-8:
+                mu[cluster, pelicula] = numerador / denominador
+            else:
+                #mu[cluster, pelicula] = 0
+                mu[cluster, pelicula] = mixture.mu[cluster, pelicula]
+
+    for cluster in range(K):
+        numerador = 0
+        denominador = 0
+        for customer in range(n):
+            indexes = np.where(X[customer] != 0)[0] #
+            if len(indexes) == 0:
+                continue  # skip users with no data
+            diff = (X[customer, indexes]-mu[cluster, indexes])
+            error = np.sum(diff**2)
+
+            numerador += post[customer, cluster] * error
+            denominador += post[customer, cluster] * len(indexes)
+
+        #var[cluster] = numerador / denominador
+
+        #if denominador >= 1:
+        if denominador > 1e-8:
+            var[cluster] = numerador / denominador
+        else:
+            var[cluster] = min_variance
+
+        if var[cluster] < min_variance:
+            var[cluster] = min_variance
+    
+    return GaussianMixture(mu, var, p)
 
 
 def run(X: np.ndarray, mixture: GaussianMixture,
