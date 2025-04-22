@@ -13,3 +13,5 @@ sample_images
 .DS_Store
 theta.pkl.gz
 mnist_model_fully_connected.pt
+netflix_complete.txt
+netflix_incomplete.txt

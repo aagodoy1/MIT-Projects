@@ -164,6 +164,7 @@ common.plot_multi(X, best_mixtures, best_posts, titles_dict)
 # Imprimir resultados
 for K in Ks:
     print(f"Cost | K={K} = {best_cost[K]}")
+
 ### PREGUNTA 4 ENCONTRAR EL MEJOR K  y BCI
 
 Ks = [1,2,3,4]
@@ -188,3 +189,50 @@ for K in Ks:
 print(f'Best K = {best_k}')
 print(f'Best bic = {highest_bic}')
 '''
+
+# PREGUNTA 8.1
+X = np.loadtxt("netflix_incomplete.txt")
+
+Ks = [12]
+seeds = [0, 1, 2, 3, 4]
+
+best_log_likehood = {}
+best_mixtures = {}
+best_seeds = {}
+
+for K in Ks:
+    print(f'Starting K = {K}')
+    highest_likehood = float('-inf')
+    best_mix = None
+
+    for seed in seeds:
+        print(f'Staring seed {seed}')
+        # Inicializar mezcla para K-means
+        mixture, post = common.init(X, K, seed)
+        #print(f'mixture = {mixture} and post = {post.ndim}')
+
+        # Ejecutar K-means
+        mixture, post, log_likehood = em.run(X, mixture, post)
+
+        # Verificar si es el mejor costo encontrado hasta ahora para este K
+        if log_likehood > highest_likehood:
+            highest_likehood = log_likehood
+            best_mix = mixture
+            best_seed = seed
+
+    # Guardar el mejor costo y mezcla
+    best_log_likehood[K] = highest_likehood
+    best_mixtures[K] = best_mix
+    best_seeds[K] = best_seed
+
+
+# Imprimir resultados
+for K in Ks:
+    print(f"Cost|K={K} = {best_log_likehood[K]}")
+    print(f'Best seed = {best_seeds[K]}')
+# PREGUNTA FINAL 
+
+X_gold = np.loadtxt("netflix_complete.txt")
+X_pred = em.fill_matrix(X, best_mixtures[12])
+rmse = common.rmse(X_gold, X_pred)
+print("RMSE:", rmse)

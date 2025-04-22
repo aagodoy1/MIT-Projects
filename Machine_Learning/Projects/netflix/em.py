@@ -156,6 +156,25 @@ def run(X: np.ndarray, mixture: GaussianMixture,
             for all components for all examples
         float: log-likelihood of the current assignment
     """
+    prev_likelihood = None
+    threshold = 1e-6
+    X = X.copy()  # Para evitar modificar X in-place
+
+    while True:
+        # E-step
+        post, log_likelihood = estep(X, mixture)
+        
+        # Convergencia: comparar cambio relativo
+        if prev_likelihood is not None:
+            if abs(log_likelihood - prev_likelihood) <= threshold * abs(log_likelihood):
+                break
+        
+        # M-step
+        mixture = mstep(X, post, mixture)
+        
+        prev_likelihood = log_likelihood
+
+    return mixture, post, log_likelihood
     raise NotImplementedError
 
 
@@ -169,4 +188,37 @@ def fill_matrix(X: np.ndarray, mixture: GaussianMixture) -> np.ndarray:
     Returns
         np.ndarray: a (n, d) array with completed data
     """
+    n, d = X.shape
+    K, _ = mixture.mu.shape
+    X_pred = X.copy()
+
+    for i in range(n):
+        # Indices observados para la fila i
+        observed = X[i] != 0
+
+        log_prob = np.zeros(K)
+
+        for k in range(K):
+            # Extraer parámetros del componente k
+            mu_k = mixture.mu[k, observed]
+            x_i = X[i, observed]
+            var_k = mixture.var[k]
+            log_p_k = np.log(mixture.p[k] + 1e-16)
+
+            # Log de densidad Gaussiana multivariada isotrópica
+            log_likelihood = -0.5 * np.sum((x_i - mu_k) ** 2) / var_k
+            log_likelihood -= 0.5 * np.sum(observed) * np.log(2 * np.pi * var_k)
+
+            log_prob[k] = log_p_k + log_likelihood
+
+        # Log-sum-exp trick para normalizar
+        log_total = logsumexp(log_prob)
+        post = np.exp(log_prob - log_total)  # p(j|u)
+
+        # Completar cada entrada faltante como la esperanza de las mus
+        for j in range(d):
+            if X[i, j] == 0:
+                X_pred[i, j] = np.dot(post, mixture.mu[:, j])
+
+    return X_pred
     raise NotImplementedError
