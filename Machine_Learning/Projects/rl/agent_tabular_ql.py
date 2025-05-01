@@ -131,23 +131,35 @@ def run_episode(for_training):
     # initialize for each episode
     # TODO Your code here
 
+    # Inicializar Q_func como puros ceros.
+    # Ya está hecho en la funcion run()
+
     (current_room_desc, current_quest_desc, terminal) = framework.newGame()
+
+    epi_reward = 0
+    step_index = 0  # para el descuento gamma^t
 
     while not terminal:
         # Choose next action and execute
         # TODO Your code here
-        next_action, next_object = epsilon_greedy(current_room_desc, state_2, q_func, epsilon)
+        next_action, next_object = epsilon_greedy(current_room_desc, current_quest_desc, q_func, epsilon)
+        next_room_desc, next_quest_desc, reward, terminal = framework.step_game()
 
         if for_training:
             # update Q-function.
-            # TODO Your code here
-            pass
+
+            tabular_q_learning(q_func, current_room_desc, current_quest_desc, next_action,
+                       next_object, reward, next_room_desc, next_quest_desc,
+                       terminal)
 
         if not for_training:
             # update reward
+            epi_reward += (GAMMA ** step_index) * reward
+            step_index += 1  # para el descuento gamma^t
             # TODO Your code here
             pass
-
+        
+        current_room_desc, current_quest_desc = next_room_desc, next_quest_desc
         # prepare next step
         # TODO Your code here
 
