@@ -15,7 +15,6 @@ NUM_EPOCHS = 200
 NUM_EPIS_TRAIN = 25  # number of episodes for training at each epoch
 NUM_EPIS_TEST = 50  # number of episodes for testing
 ALPHA = 0.1  # learning rate for training
-
 ACTIONS = framework.get_actions()
 OBJECTS = framework.get_objects()
 NUM_ACTIONS = len(ACTIONS)
@@ -36,25 +35,25 @@ def epsilon_greedy(state_1, state_2, q_func, epsilon):
     """
     # TODO Your code here
 
-    print(f'state_1 = {state_1}')
-    print(f'state_2 = {state_2}')
-    print(f'epsilon = {epsilon}')
+    #print(f'state_1 = {state_1}')
+    #print(f'state_2 = {state_2}')
+    #print(f'epsilon = {epsilon}')
     
 
     action_index, object_index = None, None
     random_number = np.random.uniform(0,1)
-    print(f'Random number selected is {random_number}')
+    #print(f'Random number selected is {random_number}')
     # Toma valor aleatorio
     if random_number <= epsilon: 
-        print(f'Entró en random')
+        #print(f'Entró en random')
         action_index = np.random.randint(0, NUM_ACTIONS) # accion aleatoria
         object_index = np.random.randint(0, NUM_OBJECTS) # objeto aleatorio
     # Toma la mejor decision
     else:
-        print(f'Entró en decision correcta')
+        #print(f'Entró en decision correcta')
         submatrix = q_func[state_1, state_2, :, :]
 
-        print(f'submatrix = {submatrix}')
+        #print(f'submatrix = {submatrix}')
         # Índice plano del máximo
         flat_index = np.argmax(submatrix)
         # Convertir a índices (c, d)
@@ -139,29 +138,32 @@ def run_episode(for_training):
     epi_reward = 0
     step_index = 0  # para el descuento gamma^t
 
+
     while not terminal:
         # Choose next action and execute
         # TODO Your code here
-        next_action, next_object = epsilon_greedy(current_room_desc, current_quest_desc, q_func, epsilon)
-        next_room_desc, next_quest_desc, reward, terminal = framework.step_game()
+        current_room = dict_room_desc[current_room_desc]
+        current_quest = dict_quest_desc[current_quest_desc]
+
+        next_action, next_object = epsilon_greedy(current_room, current_quest, q_func, epsilon)
+        next_room_desc, next_quest_desc, reward, terminal = framework.step_game(current_room_desc, current_quest_desc, next_action, next_object)
+
+        next_room = dict_room_desc[next_room_desc]
+        next_quest = dict_quest_desc[next_quest_desc]
 
         if for_training:
             # update Q-function.
 
-            tabular_q_learning(q_func, current_room_desc, current_quest_desc, next_action,
-                       next_object, reward, next_room_desc, next_quest_desc,
+            tabular_q_learning(q_func, current_room, current_quest, next_action,
+                       next_object, reward, next_room, next_quest,
                        terminal)
 
         if not for_training:
             # update reward
             epi_reward += (GAMMA ** step_index) * reward
             step_index += 1  # para el descuento gamma^t
-            # TODO Your code here
-            pass
         
         current_room_desc, current_quest_desc = next_room_desc, next_quest_desc
-        # prepare next step
-        # TODO Your code here
 
     if not for_training:
         return epi_reward
