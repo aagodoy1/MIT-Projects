@@ -46,7 +46,29 @@ def epsilon_greedy(state_vector, theta, epsilon):
         (int, int): the indices describing the action/object to take
     """
     # TODO Your code here
+    #q_value = (theta @ state_vector)[tuple2index(action_index, object_index)]
+
+
     action_index, object_index = None, None
+    random_number = np.random.uniform(0,1)
+    #print(f'Random number selected is {random_number}')
+    # Toma valor aleatorio
+    if random_number <= epsilon: 
+        #print(f'Entró en random')
+        action_index = np.random.randint(0, NUM_ACTIONS) # accion aleatoria
+        object_index = np.random.randint(0, NUM_OBJECTS) # objeto aleatorio
+    # Toma la mejor decision
+    else:
+        #print(f'Entró en decision correcta')
+        #print(f'Entró en decision correcta')
+        best_value = -10**6
+        for a in range(NUM_ACTIONS):
+            for b in range(NUM_OBJECTS):
+                possible_better_value = (theta @ state_vector)[tuple2index(a, b)]
+                if possible_better_value > best_value:
+                    best_value = possible_better_value
+                    action_index = a
+                    object_index = b
     return (action_index, object_index)
 # pragma: coderesponse end
 
@@ -68,9 +90,28 @@ def linear_q_learning(theta, current_state_vector, action_index, object_index,
     Returns:
         None
     """
-    # TODO Your code here
-    theta = None # TODO Your update here
 # pragma: coderesponse end
+    q_actual = (theta @ current_state_vector)[tuple2index(action_index, object_index)]
+    if terminal == True:
+        max_q = 0
+    else:
+
+        best_value = -10**6
+        for a in range(NUM_ACTIONS):
+            for b in range(NUM_OBJECTS):
+                possible_better_value = (theta @ next_state_vector)[tuple2index(a, b)]
+                if possible_better_value > best_value:
+                    best_value = possible_better_value
+                    max_a = a
+                    max_b = b
+
+        max_q = np.max((theta @ next_state_vector)[tuple2index(max_a, max_b)])
+
+    y = reward + GAMMA * max_q
+
+    theta[tuple2index(action_index, object_index)] += ALPHA * (y-q_actual)*current_state_vector
+
+    return None  # This function shouldn't return anything
 
 
 def run_episode(for_training):
