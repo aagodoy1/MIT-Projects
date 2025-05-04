@@ -11,11 +11,13 @@ DEBUG = False
 GAMMA = 0.5  # discounted factor
 TRAINING_EP = 0.5  # epsilon-greedy parameter for training
 TESTING_EP = 0.05  # epsilon-greedy parameter for testing
-NUM_RUNS = 10
+NUM_RUNS = 5
 NUM_EPOCHS = 600
 NUM_EPIS_TRAIN = 25  # number of episodes for training at each epoch
 NUM_EPIS_TEST = 50  # number of episodes for testing
-ALPHA = 0.001  # learning rate for training
+#ALPHA = 0.001  # learning rate for training
+ALPHA = 0.01  # learning rate for training
+
 
 ACTIONS = framework.get_actions()
 OBJECTS = framework.get_objects()
@@ -126,31 +128,49 @@ def run_episode(for_training):
         None
     """
     epsilon = TRAINING_EP if for_training else TESTING_EP
-    epi_reward = None
+    epi_reward = 0
+    step_index = 0
 
     # initialize for each episode
     # TODO Your code here
 
     (current_room_desc, current_quest_desc, terminal) = framework.newGame()
+
+
     while not terminal:
         # Choose next action and execute
         current_state = current_room_desc + current_quest_desc
-        current_state_vector = utils.extract_bow_feature_vector(
-            current_state, dictionary)
-        # TODO Your code here
+        current_state_vector = utils.extract_bow_feature_vector(current_state, dictionary)
+
+        # Selección de acción y objeto
+        action_index, object_index = epsilon_greedy(current_state_vector, theta, epsilon)
+
+        # Ejecutar paso del juego
+        next_room_desc, next_quest_desc, reward, terminal = framework.step_game(
+            current_room_desc, current_quest_desc, action_index, object_index
+        )
+
+        # Representación vectorial del próximo estado
+        next_state = next_room_desc + next_quest_desc
+        next_state_vector = utils.extract_bow_feature_vector(next_state, dictionary)
 
         if for_training:
-            # update Q-function.
-            # TODO Your code here
-            pass
+            linear_q_learning(
+                theta,
+                current_state_vector,
+                action_index,
+                object_index,
+                reward,
+                next_state_vector,
+                terminal,
+            )
 
         if not for_training:
-            # update reward
-            # TODO Your code here
-            pass
+            epi_reward += (GAMMA ** step_index) * reward
+            step_index += 1
 
-        # prepare next step
-        # TODO Your code here
+        current_room_desc = next_room_desc
+        current_quest_desc = next_quest_desc
 
     if not for_training:
         return epi_reward
