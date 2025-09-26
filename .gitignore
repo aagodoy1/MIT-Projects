@@ -15,3 +15,8 @@ theta.pkl.gz
 mnist_model_fully_connected.pt
 netflix_complete.txt
 netflix_incomplete.txt
+*.pdf
+golub.csv
+golub_gnames.csv
+
+
