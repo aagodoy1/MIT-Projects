@@ -18,5 +18,17 @@ netflix_incomplete.txt
 *.pdf
 golub.csv
 golub_gnames.csv
-
+p1/
+p2_evaluation/
+p2_unsupervised/
+p2_unsupervised_reduced/
+p2_evaluation_reduced/
+._gene_names
+._p1
+._p2_evaluation
+._p2_unsupervised
+._p2_unsupervised_reduced
+._p2_evaluation_reduced
+genes.csv
+._genes.csv
 
